@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CineBook – Movie Ticket Booking System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root{--bg:#eef1f5;--card:#fff;--ink:#14202e;--mute:#5b6878;--line:#d5dce6;--acc:#d62b49;--accInk:#fff;--free:#cfd8e3;--taken:#8a95a3;--ok:#1b8a5a;color-scheme:light;box-sizing:border-box}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e131b;--card:#171e29;--ink:#e8edf4;--mute:#9aa7b8;--line:#2a3443;--acc:#ff4d69;--accInk:#1a0a0e;--free:#2f3b4c;--taken:#5a6575;--ok:#4cc790;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e131b;--card:#171e29;--ink:#e8edf4;--mute:#9aa7b8;--line:#2a3443;--acc:#ff4d69;--accInk:#1a0a0e;--free:#2f3b4c;--taken:#5a6575;--ok:#4cc790;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Bricolage Grotesque",system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em;margin-right:auto}
+nav{display:flex;gap:6px}
+nav button,.btn{font:inherit;border:1px solid var(--line);background:transparent;color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
+nav button[aria-selected="true"],.btn.pri{background:var(--acc);color:var(--accInk);border-color:var(--acc);font-weight:600}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+main{max-width:980px;margin:0 auto;padding:20px}
+h2{font-size:28px;margin:8px 0 16px;letter-spacing:-.02em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.poster{height:110px;border-radius:8px;margin-bottom:12px;display:flex;align-items:flex-end;padding:10px;color:#fff;font-weight:800;font-size:20px;line-height:1.1}
+.meta{color:var(--mute);font-size:14px;margin:4px 0 10px}
+.times{display:flex;flex-wrap:wrap;gap:6px}
+.times button{font:inherit;font-size:14px;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.times button:hover{border-color:var(--acc)}
+.screen{height:8px;border-radius:50% 50% 0 0/100% 100% 0 0;background:var(--acc);margin:18px auto 6px;max-width:420px}
+.scrlbl{text-align:center;color:var(--mute);font-size:13px;margin-bottom:14px}
+.seats{overflow-x:auto;padding-bottom:6px}
+.row{display:flex;gap:6px;justify-content:center;margin-bottom:6px;min-width:max-content}
+.rl{width:18px;color:var(--mute);font-size:13px;align-self:center}
+.seat{width:30px;height:30px;border-radius:6px 6px 3px 3px;border:0;background:var(--free);cursor:pointer;font-size:0}
+.seat.taken{background:var(--taken);cursor:not-allowed}
+.seat.sel{background:var(--acc)}
+.legend{display:flex;gap:16px;justify-content:center;font-size:13px;color:var(--mute);margin:10px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.split{display:grid;grid-template-columns:1fr 300px;gap:20px}
+@media(max-width:760px){.split{grid-template-columns:1fr}}
+label{display:block;font-size:14px;color:var(--mute);margin:10px 0 4px}
+input,select{width:100%;font:inherit;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.sum{display:flex;justify-content:space-between;margin:6px 0}
+.tot{font-size:22px;font-weight:800}
+.ticket{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;overflow:hidden}
+.ticket .main{flex:1;padding:16px}
+.ticket .stub{width:130px;padding:16px;border-left:2px dashed var(--line);text-align:center;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.ticket .stub b{font-size:20px;color:var(--acc)}
+.ticket h3{margin:0 0 4px;font-size:20px}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;background:var(--bg);border:1px solid var(--line);color:var(--mute)}
+.tag.ok{color:var(--ok);border-color:var(--ok)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+.wide{overflow-x:auto}
+.msg{padding:10px 14px;border-radius:8px;margin-bottom:14px;background:var(--card);border:1px solid var(--line)}
+.msg.err{border-color:var(--acc)}
+.empty{color:var(--mute);padding:30px;text-align:center;border:1px dashed var(--line);border-radius:12px}
+
+/* Login screen */
+.login-shell{min-height:calc(100vh - 76px);display:grid;place-items:center;padding:28px 16px;background:radial-gradient(circle at 15% 15%,rgba(214,43,73,.16),transparent 34%),radial-gradient(circle at 85% 85%,rgba(43,47,122,.14),transparent 34%)}
+.login-card{width:min(100%,440px);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:clamp(22px,5vw,36px);box-shadow:0 18px 55px rgba(15,23,42,.12)}
+.login-brand{display:flex;align-items:center;gap:10px;margin-bottom:24px;font-weight:800;font-size:22px}
+.login-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--acc);color:white;font-size:21px}
+.login-card h2{font-size:30px;margin:0 0 6px}
+.login-sub{color:var(--mute);margin:0 0 22px}
+.login-card label{font-weight:600;color:var(--ink);margin-top:14px}
+.login-card input{padding:12px 13px}
+.login-link{border:0;background:none;color:var(--acc);font:inherit;cursor:pointer;padding:0;margin:0 0 12px}
+.login-submit{width:100%;padding:12px;margin-top:8px}
+.login-divider{display:flex;align-items:center;gap:12px;color:var(--mute);font-size:13px;margin:18px 0}
+.login-divider:before,.login-divider:after{content:"";height:1px;background:var(--line);flex:1}
+.login-guest{width:100%;padding:11px}
+.login-foot{font-size:12px;color:var(--mute);text-align:center;margin:18px 0 0}
+.login-alert{font-size:13px;margin-top:12px}
+body.login-mode header{display:none}
+.qr{display:flex;justify-content:center;margin:6px 0}
+.pay-sum{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
+@media print{body.printing *{visibility:hidden}body.printing .print-me,body.printing .print-me *{visibility:visible}.print-me{position:absolute;left:0;top:0;width:100%;border:2px solid #000}.print-me .noprint{display:none}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body class="login-mode">
+<header>
+  <h1>CineBook</h1>
+  <nav role="tablist" aria-label="Sections">
+    <button role="tab" data-v="movies">Now showing</button>
+    <button role="tab" data-v="bookings">My bookings</button>
+    <button role="tab" data-v="admin">Admin</button>
+    <button data-v="logout">Log out</button>
+  </nav>
+</header>
+
+<main id="app"></main>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const app=$("#app"),COLORS=["#6b1d3a","#1d5c6b","#2b2f7a","#1f6a45","#7a4a14"];
+const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const dates=[0,1,2,3,4,5,6].map(i=>{const d=new Date();d.setDate(d.getDate()+i);return ymd(d)});
+const lbl=d=>new Date(d+"T00:00").toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"});
+let user=null,view="login",mode="login",date=dates[0],movies=[],pick=null,seatList=[],sel=[],draft=null,note=null,form={nm:"",em:""},guestB=[];
+const isAdmin=()=>user&&user.role==="admin", isCust=()=>user&&user.role==="customer";
+const noteHtml=()=>{const n=note;note=null;return n?`<div class="msg${n.err?" err":""}">${esc(n.t)}</div>`:""};
+
+async function call(path,data){
+ try{
+  const r=await fetch(path,data?{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(data)}:{});
+  const j=await r.json().catch(()=>null);
+  if(!r.ok||(j&&j.ok===false))return{ok:false,status:r.status,error:(j&&j.error)||"Request failed."};
+  return j||{ok:false,error:"Bad reply from server."};
+ }catch(e){return{ok:false,error:"Cannot reach the server."}}
+}
+const expired=r=>{if(r.status===401){user=null;view="login";mode="login";render();return true}return false};
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=async()=>{
+ if(b.dataset.v==="logout"){await call("api/auth/logout",{});user=null;guestB=[];pick=null;sel=[];draft=null;view="login";mode="login";return render()}
+ view=b.dataset.v;pick=null;sel=[];draft=null;render();
+});
+
+function render(){
+ document.body.classList.toggle("login-mode",view==="login");
+ $('nav [data-v="admin"]').style.display=isAdmin()?"":"none";
+ $('nav [data-v="bookings"]').style.display=isAdmin()?"none":"";
+ document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===view||((view==="seats"||view==="pay")&&b.dataset.v==="movies")));
+ ({login:loginView,movies:moviesView,seats:seatView,pay:payView,bookings:bookingsView,admin:adminView})[view]();
+ window.scrollTo(0,0);
+}
+
+function loginView(){
+ const reg=mode==="register",adm=mode==="admin";
+ app.innerHTML=`<section class="login-shell"><div class="login-card">
+ <div class="login-brand"><span class="login-mark">▶</span><span>CineBook</span></div>
+ <h2>${adm?"Admin sign in":reg?"Create account":"Welcome back"}</h2>
+ <p class="login-sub">${adm?"Staff access only.":reg?"Create your CineBook account.":"Sign in to continue your movie experience."}</p>
+ <div style="display:flex;gap:6px">${[["login","Sign in"],["register","Register"],["admin","Admin"]].map(([k,t])=>`<button type="button" class="btn${mode===k?" pri":""}" data-mode="${k}" style="flex:1;padding:6px">${t}</button>`).join("")}</div>
+ <form id="lf" novalidate>
+ ${reg?'<label for="f_name">Full name</label><input id="f_name" autocomplete="name">':""}
+ ${adm?'<label for="f_user">Username</label><input id="f_user" autocomplete="username">':'<label for="f_email">Email address</label><input id="f_email" type="email" autocomplete="username">'}
+ <label for="f_pw">Password</label><input id="f_pw" type="password" autocomplete="${reg?"new-password":"current-password"}">
+ <p id="le" class="msg err login-alert" role="alert" style="display:none"></p>
+ <button class="btn pri login-submit" id="sb" type="submit">${adm?"Sign in as admin":reg?"Create account":"Sign in"}</button></form>
+ <div class="login-divider">OR</div><button class="btn login-guest" id="guest" type="button">Continue as guest</button>
+ <p class="login-foot">Guests can book, but cannot see or cancel bookings later.</p></div></section>`;
+ app.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;loginView()});
+ $("#guest").onclick=()=>{user={name:"Guest",email:"",role:"guest"};view="movies";render()};
+ $("#lf").onsubmit=async e=>{
+  e.preventDefault();
+  const v=id=>{const x=$("#"+id);return x?x.value.trim():""},pw=$("#f_pw").value,er=$("#le");
+  const fail=m=>{er.textContent=m;er.style.display="block"};
+  let path,data;
+  if(adm){if(!v("f_user")||!pw)return fail("Enter username and password.");path="api/auth/admin-login";data={username:v("f_user"),password:pw}}
+  else{
+   const em=v("f_email");
+   if(reg&&v("f_name").length<2)return fail("Enter your full name.");
+   if(!/^\S+@\S+\.\S+$/.test(em))return fail("Enter a valid email address.");
+   if(pw.length<(reg?6:1))return fail(reg?"Password must contain at least 6 characters.":"Enter your password.");
+   path="api/auth/"+(reg?"register":"login");data=reg?{name:v("f_name"),email:em,password:pw}:{email:em,password:pw};
+  }
+  const b=$("#sb");b.disabled=true;
+  const r=await call(path,data);
+  if(!r.ok){b.disabled=false;return fail(r.error)}
+  user={name:r.name||"",email:r.email||"",role:adm?"admin":"customer"};
+  view=adm?"admin":"movies";note={t:"Welcome, "+user.name+"!"};render();
+ };
+}
+
+async function moviesView(){
+ app.innerHTML=noteHtml()+`<h2>Now showing</h2><label for="dt">Date</label>
+ <select id="dt" style="max-width:220px;margin-bottom:16px">${dates.map(d=>`<option value="${d}"${d===date?" selected":""}>${lbl(d)}</option>`).join("")}</select>
+ <input type="search" id="ms" placeholder="Search movies..." style="margin-bottom:16px" aria-label="Search movies">
+ <div id="mg" class="empty">Loading movies...</div>`;
+ $("#dt").onchange=e=>{date=e.target.value;moviesView()};
+ const r=await call("api/movies?date="+date);
+ if(view!=="movies")return;
+ const g=$("#mg");
+ if(r.ok===false){g.textContent=r.error;return}
+ movies=r;
+ if(!movies.length){g.textContent="No shows on this date.";return}
+ g.className="grid";
+ g.innerHTML=movies.map((m,i)=>`<div class="card" data-t="${esc(m.title.toLowerCase())}">
+  <div class="poster" style="background:${COLORS[m.id%COLORS.length]}">${esc(m.title)}</div>
+  <div class="meta">${esc(m.genre)} · ${m.dur} min · ${esc(m.lang)}<br>From ₹${Math.min(...m.shows.map(s=>s.price))}</div>
+  <div class="times">${m.shows.map(s=>`<button data-m="${i}" data-s="${s.showId}" aria-label="Book ${esc(m.title)} at ${esc(s.time)}">${esc(s.time)}</button>`).join("")}</div></div>`).join("");
+ $("#ms").oninput=e=>{const q=e.target.value.toLowerCase().trim();g.querySelectorAll(".card").forEach(c=>c.style.display=c.dataset.t.includes(q)?"":"none")};
+ g.querySelectorAll(".times button").forEach(b=>b.onclick=async()=>{
+  const m=movies[+b.dataset.m],show=m.shows.find(s=>s.showId==b.dataset.s);
+  b.disabled=true;
+  const r=await call("api/seats?show="+show.showId);
+  if(!r.ok){b.disabled=false;alert(r.error);return}
+  pick={movie:m,show,date};seatList=r.seats;sel=[];view="seats";render();
+ });
+}
+
+const seatPrice=id=>{const s=seatList.find(x=>x.id===id),p=pick.show.price;return Math.round(s.type==="Premium"?p*1.2:p)};
+
+function seatView(){
+ const rows={};seatList.forEach(s=>(rows[s.id[0]]=rows[s.id[0]]||[]).push(s));
+ const total=sel.reduce((a,id)=>a+seatPrice(id),0),cust=isCust();
+ app.innerHTML=noteHtml()+`<button class="btn" id="back">Back to movies</button>
+ <h2>${esc(pick.movie.title)}</h2><div class="meta">${lbl(pick.date)} at ${esc(pick.show.time)} · ${esc(pick.movie.lang)}</div>
+ <div class="split"><div class="card"><div class="screen"></div><div class="scrlbl">Screen this way</div>
+ <div class="seats">${Object.keys(rows).sort().map(r=>`<div class="row"><span class="rl">${r}</span>${rows[r].map((s,i)=>`<button class="seat${s.taken?" taken":""}${sel.includes(s.id)?" sel":""}" data-s="${s.id}" ${s.taken?"disabled":""} aria-label="Seat ${s.id}${s.taken?", taken":""}${s.type==="Premium"?", premium":""}" aria-pressed="${sel.includes(s.id)}" style="${i===5?"margin-left:12px;":""}${s.type==="Premium"?"border-bottom:3px solid var(--acc)":""}"></button>`).join("")}</div>`).join("")}</div>
+ <div class="legend"><span><i style="background:var(--free)"></i>Free</span><span><i style="background:var(--acc)"></i>Yours</span><span><i style="background:var(--taken)"></i>Taken</span></div>
+ <div class="meta" style="text-align:center">Seats with a red underline are premium (+20%)</div></div>
+ <div class="card"><h3 style="margin-top:0">Your booking</h3>
+ <div class="sum"><span>Seats</span><b>${esc(sel.join(", ")||"None selected")}</b></div>
+ <div class="sum"><span>Tickets</span><b>${sel.length}</b></div>
+ <div class="sum"><span>Total</span><span class="tot">₹${total}</span></div>
+ <label for="nm">Full name</label><input id="nm" autocomplete="name" value="${esc(cust?user.name:form.nm)}" ${cust?"readonly":""}>
+ <label for="em">Email</label><input id="em" type="email" autocomplete="email" value="${esc(cust?user.email:form.em)}" ${cust?"readonly":""}>
+ <p id="err" class="msg err" style="display:none;margin-top:12px"></p>
+ <button class="btn pri" id="go" style="width:100%;margin-top:14px">Continue to payment</button></div></div>`;
+ $("#back").onclick=()=>{pick=null;sel=[];view="movies";render()};
+ if(!cust){$("#nm").oninput=e=>form.nm=e.target.value;$("#em").oninput=e=>form.em=e.target.value}
+ app.querySelectorAll(".seat:not(.taken)").forEach(b=>b.onclick=()=>{
+  const s=b.dataset.s;
+  if(sel.includes(s))sel=sel.filter(x=>x!==s);else if(sel.length<6)sel.push(s);else return;
+  seatView();
+ });
+ $("#go").onclick=()=>{
+  const n=$("#nm").value.trim(),e=$("#em").value.trim(),er=$("#err");
+  const bad=!sel.length?"Select at least one seat (up to 6).":n.length<2?"Enter your full name.":!/^\S+@\S+\.\S+$/.test(e)?"Enter a valid email address.":"";
+  if(bad){er.textContent=bad;er.style.display="block";return}
+  draft={name:n,email:e,total,seats:[...sel]};view="pay";render();
+ };
+}
+
+function payView(){
+ const d=draft;
+ app.innerHTML=`<button class="btn" id="pb">Back to seats</button><h2>Payment</h2><div class="split">
+ <div class="card"><label for="pm">Payment method</label>
+ <select id="pm"><option value="UPI">UPI</option><option value="Card">Debit / Credit card</option><option value="NetBanking">Net banking</option></select>
+ <div id="pf"></div><p id="perr" class="msg err" style="display:none;margin-top:12px"></p>
+ <button class="btn pri" id="pay" style="width:100%;margin-top:14px">Pay ₹${d.total}</button>
+ <p class="meta" style="margin-top:10px">Demo payment: no real money is charged and card details are never sent or saved.</p></div>
+ <div class="card"><h3 style="margin-top:0">Order summary</h3>
+ <div class="sum"><span>Movie</span><b>${esc(pick.movie.title)}</b></div>
+ <div class="sum"><span>Show</span><b>${lbl(pick.date)} ${esc(pick.show.time)}</b></div>
+ <div class="sum"><span>Seats</span><b>${esc(d.seats.join(", "))}</b></div>
+ <div class="sum pay-sum"><span>Total</span><span class="tot">₹${d.total}</span></div></div></div>`;
+ const pm=$("#pm"),pf=$("#pf");
+ const fields=()=>{pf.innerHTML=pm.value==="UPI"?'<label for="f1">UPI ID</label><input id="f1" placeholder="name@bank" autocomplete="off">'
+  :pm.value==="Card"?'<label for="f1">Card number</label><input id="f1" inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456" autocomplete="off"><label for="f2">Expiry (MM/YY)</label><input id="f2" maxlength="5" placeholder="08/28" autocomplete="off"><label for="f3">CVV</label><input id="f3" type="password" inputmode="numeric" maxlength="3" autocomplete="off">'
+  :'<label for="f1">Bank</label><select id="f1"><option>State Bank of India</option><option>HDFC Bank</option><option>ICICI Bank</option><option>Axis Bank</option></select>'};
+ fields();pm.onchange=fields;
+ $("#pb").onclick=()=>{draft=null;view="seats";render()};
+ $("#pay").onclick=async()=>{
+  const er=$("#perr"),v=i=>{const x=$("#f"+i);return x?x.value.trim():""};
+  let bad="";
+  if(pm.value==="UPI"&&!/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(v(1)))bad="Enter a valid UPI ID like name@bank.";
+  if(pm.value==="Card"){
+   if(!/^\d{16}$/.test(v(1).replace(/\s/g,"")))bad="Card number must be 16 digits.";
+   else if(!/^(0[1-9]|1[0-2])\/\d{2}$/.test(v(2)))bad="Expiry must look like 08/28.";
+   else if(!/^\d{3}$/.test(v(3)))bad="CVV must be 3 digits.";
+  }
+  if(bad){er.textContent=bad;er.style.display="block";return}
+  const btn=$("#pay");btn.disabled=true;btn.textContent="Processing...";
+  await new Promise(r=>setTimeout(r,900));
+  const r=await call("api/book",{showId:pick.show.showId,seats:d.seats.join(","),name:d.name,email:d.email,phone:"",method:pm.value});
+  if(!r.ok){
+   const s=await call("api/seats?show="+pick.show.showId);if(s.ok)seatList=s.seats;
+   sel=[];draft=null;view="seats";note={t:r.error,err:true};render();return;
+  }
+  const bk={id:r.bookingId,status:"Confirmed",total:r.total,date:pick.date,time:pick.show.time,title:pick.movie.title,seats:[...d.seats]};
+  if(!isCust())guestB.push(bk);
+  draft=null;pick=null;sel=[];view="bookings";
+  note={t:`Payment successful. Booking ${bk.id} confirmed. Your ticket is below.`};render();
+ };
+}
+
+const ticketHtml=(b,cust)=>`<div class="ticket" id="t-${esc(b.id)}"><div class="main"><h3>${esc(b.title)}</h3>
+ <div class="meta">${lbl(b.date)} at ${esc(b.time)}<br>${b.seats.length?"Seats "+esc(b.seats.join(", ")):"Seats released"}</div>
+ <span class="tag ${b.status==="Confirmed"?"ok":""}">${esc(b.status)}</span>
+ ${b.status==="Confirmed"?`<span class="noprint"><button class="btn" data-p="${esc(b.id)}" style="padding:4px 10px;font-size:13px;margin-left:6px">Print ticket</button>${cust?`<button class="btn" data-c="${esc(b.id)}" style="padding:4px 10px;font-size:13px;margin-left:6px">Cancel booking</button>`:""}</span>`:""}</div>
+ <div class="stub">${b.status==="Confirmed"?`<div class="qr" data-qr="${esc(b.id+"|"+b.title+"|"+b.date+" "+b.time+"|"+b.seats.join(" "))}"></div>`:""}
+ <span class="meta" style="margin:0">Booking ID</span><b>${esc(b.id)}</b><span>₹${esc(b.total)}</span></div></div>`;
+
+async function bookingsView(){
+ app.innerHTML=noteHtml()+`<h2>My bookings</h2><div id="bl" class="empty">Loading...</div>`;
+ const cust=isCust();let list;
+ if(cust){
+  const r=await call("api/mybookings");
+  if(view!=="bookings"||expired(r))return;
+  if(!r.ok){$("#bl").textContent=r.error;return}
+  list=r.bookings;
+ }else list=[...guestB].reverse();
+ const bl=$("#bl");
+ if(!list.length){bl.textContent=cust?"No bookings yet. Pick a movie to book your first seats.":"No bookings in this visit. Sign in to see your saved bookings.";return}
+ bl.className="";bl.innerHTML=list.map(b=>ticketHtml(b,cust)).join("")+(cust?"":'<p class="meta">Sign in with the same email to cancel or view bookings later.</p>');
+ bl.querySelectorAll("[data-qr]").forEach(el=>{if(window.QRCode)new QRCode(el,{text:el.dataset.qr,width:96,height:96});else el.textContent="[QR]"});
+ bl.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
+  const t=$("#t-"+b.dataset.p);t.classList.add("print-me");document.body.classList.add("printing");
+  window.print();t.classList.remove("print-me");document.body.classList.remove("printing");
+ });
+ bl.querySelectorAll("[data-c]").forEach(b=>b.onclick=async()=>{
+  if(!confirm("Cancel this booking?"))return;
+  b.disabled=true;
+  const r=await call("api/cancel",{bookingId:b.dataset.c});
+  if(expired(r))return;
+  note=r.ok?{t:"Booking cancelled. Your seats are free again."}:{t:r.error,err:true};bookingsView();
+ });
+}
+
+async function adminView(){
+ if(!isAdmin()){view="movies";return render()}
+ app.innerHTML=noteHtml()+`<h2>Admin</h2><div id="ad" class="empty">Loading...</div>`;
+ const r=await call("api/admin/summary");
+ if(view!=="admin"||expired(r))return;
+ const ad=$("#ad");
+ if(!r.ok){ad.textContent=r.error;return}
+ ad.className="";
+ ad.innerHTML=`<div class="grid" style="margin-bottom:20px">
+ <div class="card"><div class="meta">Revenue</div><div class="tot">₹${esc(r.revenue)}</div></div>
+ <div class="card"><div class="meta">Confirmed bookings</div><div class="tot">${r.confirmed}</div></div>
+ <div class="card"><div class="meta">Tickets sold</div><div class="tot">${r.tickets}</div></div></div>
+ <div class="card wide"><h3 style="margin-top:0">All bookings</h3>${r.bookings.length?`<table><tr><th>ID</th><th>Movie</th><th>Show</th><th>Seats</th><th>Customer</th><th>Paid by</th><th>Total</th><th>Status</th></tr>
+ ${r.bookings.map(b=>`<tr><td>${esc(b.id)}</td><td>${esc(b.title)}</td><td>${esc(b.date)} ${esc(b.time)}</td><td>${esc(b.seats.replace(/,/g,", "))}</td><td>${esc(b.name)}<br><span class="meta">${esc(b.email)}</span></td><td>${esc(b.method)}</td><td>₹${esc(b.total)}</td><td>${esc(b.status)}</td></tr>`).join("")}</table>`:'<div class="empty">No bookings recorded.</div>'}</div>`;
+ adminTools(ad);
+}
+
+async function adminTools(ad){
+ const o=await call("api/admin/manage/options");
+ if(!o.ok||view!=="admin")return;
+ const box=document.createElement("div");
+ box.className="grid";box.style.marginBottom="20px";
+ box.innerHTML=`<div class="card"><h3 style="margin-top:0">Add a movie</h3>
+ <label for="m1">Title</label><input id="m1"><label for="m2">Genre</label><input id="m2">
+ <label for="m3">Duration (minutes)</label><input id="m3" type="number" min="30" max="400"><label for="m4">Language</label><input id="m4">
+ <p id="me" class="msg err" style="display:none;margin-top:12px"></p><button class="btn pri" id="mb" style="width:100%;margin-top:14px">Add movie</button></div>
+ <div class="card"><h3 style="margin-top:0">Add a show</h3>
+ <label for="s1">Movie</label><select id="s1">${o.movies.map(m=>`<option value="${m.id}">${esc(m.title)}</option>`).join("")}</select>
+ <label for="s2">Screen</label><select id="s2">${o.screens.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select>
+ <label for="s3">Date</label><input id="s3" type="date" value="${dates[0]}" min="${dates[0]}">
+ <label for="s4">Time</label><input id="s4" type="time" value="18:00">
+ <label for="s5">Base price (₹)</label><input id="s5" type="number" min="1" value="200">
+ <p id="se" class="msg err" style="display:none;margin-top:12px"></p><button class="btn pri" id="sb2" style="width:100%;margin-top:14px">Add show</button></div>`;
+ ad.insertBefore(box,ad.children[1]);
+ const send=async(btn,errId,path,data,okMsg)=>{
+  const er=$("#"+errId);er.style.display="none";btn.disabled=true;
+  const r=await call(path,data);
+  if(expired(r))return;
+  if(!r.ok){btn.disabled=false;er.textContent=r.error;er.style.display="block";return}
+  note={t:okMsg};adminView();
+ };
+ const v=id=>$("#"+id).value.trim();
+ $("#mb").onclick=e=>send(e.target,"me","api/admin/manage/movie",{title:v("m1"),genre:v("m2"),dur:v("m3"),lang:v("m4")},"Movie added.");
+ $("#sb2").onclick=e=>send(e.target,"se","api/admin/manage/show",{movieId:v("s1"),screenId:v("s2"),date:v("s3"),time:v("s4"),price:v("s5")},"Show added. It appears on the Now showing page for that date.");
+}
+
+(async()=>{
+ const me=await call("api/auth/me");
+ if(me.ok&&me.loggedIn){user={name:me.name,email:me.email||"",role:me.role||"customer"};view=user.role==="admin"?"admin":"movies"}
+ render();
+})();
+</script>
+</body>
+</html>
